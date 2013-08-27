@@ -1,0 +1,35 @@
+12/12/07 - Starting a new "branch" to clean up and incorporate the science modeling in.
+bloer --> eorpy
+
+Notes for running bleor.  Note that this is for DACOTA
+Recall there is baseline stuff under the baseline directory
+
+Need to include 
+- "slanted" uv vs k modes
+- spectralsmoothness
+- mosaic for low k-modes
+
+
+To run
+from blear import *
+b = bleor()  creates instance
+	config='19ele.dat' - antenna configuration file
+	rotate=True - whether or whether not to derotate the platform
+	Nplat=1 - number of platforms, for an array the earth is it
+	Tsys=50.0
+	dlogk=0.3 - log mode spacing
+	tobs=1000.0 - total observation time
+	tobsUnit='hr'
+	z=6.0
+	restFreq=230.0	freqUnit='GHz'
+	BW=2.0 bwUnit='GHz'
+	Nch=128
+	HAmin=-4.0	HAmax=4.0	HAunit='hr'
+	tint=0.5 - integration time period
+	tintUnit='hr'
+	dec=34.0
+	lat=34.0
+	boxcar=10 - boxcar averaging over k-modes
+recall, the web-page index.html has the most recent values upon refresh
+
+b.arraySensitivity()
