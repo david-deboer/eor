@@ -68,6 +68,8 @@ class eor:
         self.dkcoher = None
         self.dkcoherScale = 1.0
         self.cohMode = 'normal'  # vs full or un
+        self.shadow = True
+        print 'hardcoding shadowing to '+str(self.shadow)
         ##########Now set system (do this order to not screw up updateWeb)
         self.setModel(modelType=modelType,H0=H0)
         self.setData(boxcar=boxcar,coherentTracks=True,outputType='sq')
@@ -631,6 +633,7 @@ class eor:
                     nBaseline += 1
             HA+= self.tint*tu
         print "Compare "+str(nBaseline)+" with "+str(self.nBaseline)
+        self.nBaseline = nBaseline
 	return nBaseline
 
     def computeDishUVsize(self,coord='uv'):
@@ -664,6 +667,9 @@ class eor:
         for i in range(self.Npp):
             for j in range(i):
                 u, v, w = self.calcuv(i,j,HA)
+                if u==False:
+                    continue
+                nKline+=1
                 ku = u*scale
                 kv = v*scale
                 self.ku.append(ku)
@@ -672,7 +678,7 @@ class eor:
                 if ku < 0.0:
                     a = -1.0
                 self.kperp.append(a*math.sqrt(ku**2 + kv**2))
-        nKline = self.nBaseline*self.Nch
+        nKline*=self.Nch
 	return nKline
 
     def calcKextremes(self):
@@ -705,6 +711,8 @@ class eor:
             for i in range(self.Npp):
                 for j in range(i):
                     u, v, w = self.calcuv(i,j,HA)
+                    if u is False:
+                        continue
                     ku = u*scale
                     kv = v*scale
                     kperp = math.sqrt(ku**2. + kv**2.)
@@ -926,7 +934,11 @@ class eor:
             Z = (math.cos(lat)*dN + math.sin(lat)*dU)/self.obsWavelength
             u =  X*math.sin(HA)               + Y*math.cos(HA)
             v = -X*math.sin(dec)*math.cos(HA) + Y*math.sin(dec)*math.sin(HA) + Z*math.cos(dec)
-            w =  X*math.cos(dec)*math.cos(HA) - Y*math.cos(dec)*math.sin(HA) + Z*math.sin(dec)	
+            w =  X*math.cos(dec)*math.cos(HA) - Y*math.cos(dec)*math.sin(HA) + Z*math.sin(dec)
+            if self.shadow==False and self.obsWavelength*math.sqrt(u*u + v*v) < self.Dant:
+                print 'Shadowed baseline not used...set to zero'
+                u = 0.0
+                v = 0.0
 	return u,v,w
 
     def calcduv(self,i,j,HAhr,decdeg=None,latdeg=None):

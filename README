@@ -9,6 +9,13 @@ Need to include
 - spectralsmoothness
 - mosaic for low k-modes
 
+e = eorpy.eor()
+...
+e.arraySensitivity()
+then 
+import eormodel
+em=eormodel.modelData()
+em.plotModelData(e)
 
 To run
 from blear import *
