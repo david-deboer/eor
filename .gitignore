@@ -1,5 +1,6 @@
 *.pyc
 *.png
+index.html
 .DS_Store
 archive
 figs

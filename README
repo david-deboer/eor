@@ -1,3 +1,19 @@
+eor sensitivity code
+no sample variance term
+
+import eorpy
+e = eorpy.eor()
+Éset config (view local index.html)
+e.arraySensitivity()
+É can add model view stuff from within eorpy or
+import eormodel
+em=eormodel.modelData()
+em.plotModelData(e)
+
+
+
+OLD STUFF BELOW
+
 12/12/07 - Starting a new "branch" to clean up and incorporate the science modeling in.
 bloer --> eorpy
 
