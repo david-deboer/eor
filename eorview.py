@@ -23,7 +23,13 @@ class view:
             fp.write(s)
             fp.close()
             return 0
-
+        elif bl.arrayType=='platform':
+            rotopt = bl.rotate
+            dacsh = bl.dacotaShortcut
+        else:
+            rotopt = 'N/A'
+            dacsh = 'N/A'
+            
         fp = open("index.html","w")
         dt = str(datetime.datetime.today())
         s = "<html>\n<body>\n<p>"+dt+"\n<p>\n"
@@ -99,34 +105,40 @@ class view:
         fp.write(s)
         #####Row 11
         s = "<tr>\n\t<th align=left>[nBaseline]</th><td>"+str(bl.nBaseline)+\
-            "</td><td> </td><th align=left> </th><td> "+\
+            "</td><td> </td><th align=left>shadow </th><td> "+str(bl.shadow)+\
             "</td><td> </td><th align=left>plotSteps </th><td>"+repr(bl.plotSteps)+"</td>\n</tr>\n"
         fp.write(s)
         #####Row 12
         s = "<tr>\n\t<th align=left>BW</th><td>"+str(bl.BW)+" "+bl.bwUnit+\
-            "</td><td> </td><th align=center colspan=2>Model</th>"+\
+            "</td><td> </td><th align=left> </th><td> "+\
             "<td> </td><th align=left>plotBins</th><td>"+repr(bl.plotBins)+"</td>\n</tr>\n"
         fp.write(s)
         #####Row 13
         s = "<tr>\n\t<th align=left>Nch</th><td>"+str(bl.Nch)+\
-            "</td><td> </td><th align=left>modelType</th> "+\
-            "<td>"+bl.modelType+" </td><td> </td><th align=left>plotMMQ</th><td>"+repr(bl.plotMMQ)+"</td>\n</tr>\n"
+            "</td><td> </td><th align=center colspan=2>Model</th>"+\
+            "<td> </td><th align=left>plotMMQ</th><td>"+repr(bl.plotMMQ)+"</td>\n</tr>\n"
         fp.write(s)
         #####Row 14
-        s = "<tr>\n\t<th align=left>rotate</th><td>"+str(bl.rotate)+\
-            "</td><td> </td><th align=left> H0 </th><td> "+str(bl.H0)+\
+        s = "<tr>\n\t<th align=left>Npol</th><td>"+str(bl.Npol)+\
+            "</td><td> </td><th align=left>modelType</th><td>"+bl.modelType+" </td>"+\
             "</td><td> </td><th align=left>plotLines</th><td>"+repr(bl.plotLines)+" </td>\n</tr>\n"
         fp.write(s)
         #####Row 15
-        s = "<tr>\n\t<th align=left>Npol</th><td>"+str(bl.Npol)+\
-            "</td><td> </td><th align=left> </th><td> "+\
+        s = "<tr>\n\t<th align=left>rotate</th><td>"+str(rotopt)+\
+            "</td><td> </td><th align=left> H0 </th><td> "+str(bl.H0)+\
             "</td><td> </td><th align=left>linetype</th><td>"+bl.ltype+" </td>\n</tr>\n"
         fp.write(s)
         #####Row 16
-        s = "<tr>\n\t<th align=left> </th><td>"\
+        s = "<tr>\n\t<th align=left>dacotaShortcut </th><td>"+str(dacsh)+\
             "</td><td> </td><th align=left> </th><td> "+\
             "</td><td> </td><th align=left>showLegend</th><td>"+str(bl.showLegend)+" </td>\n</tr>\n"
         fp.write(s)
+        #####Row 17
+        s = "<tr>\n\t<th align=left></th><td>"+" "+\
+            "</td><td> </td><th align=left> </th><td> "+\
+            "</td><td> </td><th align=left>plotVersion</th><td>"+str(bl.plotVersion)+" </td>\n</tr>\n"
+        fp.write(s)
+        
         s = "</table>\n"
         fp.write(s)
         s = "<p><p>\n"

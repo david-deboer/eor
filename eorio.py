@@ -5,17 +5,19 @@ import sys
 import string
 import eorpy
 import eormodel
+import numpy as np
 em = eormodel.modelData()
 
 print 'loading eorio'
 
-def plotSensitivity(eor,fignum=1,color=None,label=None,linewidth=2):
+def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     """plot sensitivity"""
 
     if label == 'auto':
         label = '%s z=%.0f' % (eor.config,eor.z)
 
     print 'Note that to get both bins and lines, you need to run with plotBins first'
+
 
     little_h = eor.h
     edgeLeft = eorpy.edgeLeft
@@ -25,34 +27,34 @@ def plotSensitivity(eor,fignum=1,color=None,label=None,linewidth=2):
     plt.figure(fignum)
     
     print label
-    xdat=list(eor.kbin[ctr])
-    ydat=list(eor.d)
-    if eor.plotSteps:
-        xdat,ydat=stepWise(eor)
-    if eor.plotBins:
-        errx,erry=errorBars(eor)
-        plt.subplot(111,xscale='log',yscale='log')
-        if color==None:
-            plt.errorbar(eor.kbin[ctr],eor.d,yerr=None,xerr=errx,fmt='_')
-        else:
-            plt.errorbar(eor.kbin[ctr],eor.d,yerr=None,xerr=errx,fmt='_',color=color)
-    if eor.plotLines:
-        if color==None:
-            plt.loglog(xdat,ydat,ls=eor.ltype,label=label,linewidth=linewidth)
-        else:
-            plt.loglog(xdat,ydat,color=color,ls=eor.ltype,label=label,linewidth=linewidth)
+    xdat=np.array(eor.kbin[ctr])*little_h
+    ydat=np.array(eor.d)
+    if eor.plotVersion == 'errbar':
+        em.plotModelData(eor,[xdat,ydat],fignum,color,linewidth)
     else:
-        plt.loglog(xdat,ydat,'+')
-    if eor.plotModel:
-        em.plotModelData(eor,fignum,color,linewidth)
-    #plt.title('Sensitivity [k vs $\Delta^2$]')
-    if little_h==1.0:
-        plt.xlabel(r'$k$ [h Mpc$^{-1}$]')
-    else:
-        plt.xlabel(r'$k$ [Mpc$^{-1}$]')
-    plt.ylabel(r'$\Delta^2_{CO}$ or $\Delta^2_N$ [$\mu$K$^2$]')
-    if label!=None:
-        plt.legend()
+        if eor.plotSteps:
+            xdat,ydat=stepWise(eor,little_h)
+        if eor.plotBins:
+            errx,erry=errorBars(eor,little_h)
+            plt.subplot(111,xscale='log',yscale='log')
+            if color==None:
+                plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_')
+            else:
+                plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_',color=color)
+        if eor.plotLines:
+            if color==None:
+                plt.loglog(xdat,ydat,ls=eor.ltype,label=label,linewidth=linewidth)
+            else:
+                plt.loglog(xdat,ydat,color=color,ls=eor.ltype,label=label,linewidth=linewidth)
+        else:
+            plt.loglog(xdat,ydat,'+')
+        if eor.plotModel:
+            em.plotModelData(eor,None,fignum,color,linewidth)
+    plt.xlabel(r'$k$ [h$\cdot$Mpc$^{-1}$]')
+    #plt.ylabel(r'$\Delta^2_{CO}$ or $\Delta^2_N$ [$\mu$K$^2$]')
+    plt.ylabel(r'$\Delta^2_{CO}$ [$\mu$K$^2$]')
+    if eor.showLegend:
+        plt.legend(loc='lower right')
         
     if eor.plotMMQ:     # compute approx
         bmmq = eor.computeMMQboost()
@@ -76,22 +78,22 @@ def plotBoost(eor,fignum=2):
         else:
             plt.loglog(eor.kbin[eorpy.ctr],bmmq,'x')    
 
-def stepWise(eor):
+def stepWise(eor,h):
     stepK=[]
     stepD=[]
     for i in range(eor.nbin-1):
-        stepK.append(eor.kbin[eorpy.edgeLeft][i])
-        stepK.append(eor.kbin[eorpy.edgeRight][i])
-        stepK.append(eor.kbin[eorpy.edgeLeft][i+1])
+        stepK.append(h*eor.kbin[eorpy.edgeLeft][i])
+        stepK.append(h*eor.kbin[eorpy.edgeRight][i])
+        stepK.append(h*eor.kbin[eorpy.edgeLeft][i+1])
         stepD.append(eor.d[i])
         stepD.append(eor.d[i])
         stepD.append(eor.d[i+1])
     return stepK,stepD
-def errorBars(eor):
+def errorBars(eor,h):
     errx = []
     erry = []
     for i in range(eor.nbin):
-        errx.append((eor.kbin[eorpy.edgeRight][i] - eor.kbin[eorpy.edgeLeft][i])/2.0)
+        errx.append(h*(eor.kbin[eorpy.edgeRight][i] - eor.kbin[eorpy.edgeLeft][i])/2.0)
         erry.append(0.0)
     return errx, erry
 

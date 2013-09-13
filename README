@@ -3,9 +3,9 @@ no sample variance term
 
 import eorpy
 e = eorpy.eor()
-Éset config (view local index.html)
+... set config (view local index.html)
 e.arraySensitivity()
-É can add model view stuff from within eorpy or
+... can add model view stuff from within eorpy or
 import eormodel
 em=eormodel.modelData()
 em.plotModelData(e)

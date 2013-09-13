@@ -24,7 +24,7 @@ Units = {'Hz':1.0, 'kHz':1.0E3, 'MHz':1.0E6, 'GHz':1.0E9, 'sec':1.0, 'min':60.0,
 
 ###Everything else is in the class bleor
 class eor:
-    def __init__(self, config='amiba.dat', rotate=True, Nplat=1, Tsys=50.0, Npol=1.0, dlogk=0.2, tobs=1000.0, tobsUnit='hr', z=6.0, restFreq=230.0, freqUnit='GHz',\
+    def __init__(self, config='13ele.dat', rotate=True, Nplat=1, Tsys=50.0, Npol=1.0, dlogk=0.2, tobs=1000.0, tobsUnit='hr', z=6.0, restFreq=230.0, freqUnit='GHz',\
                  BW=1.0, bwUnit='GHz', Nch=128, HAmin=-5.0, HAmax=5.0, HAunit='hr', tint=0.5, tintUnit='hr', dec=25.0, lat=34.0, boxcar=10.,\
                  modelType='auto:file', H0=72.0):
         """eorpy runs the baseline stuff for EoR power spectrum measurement.  Needs nedclass, eorview, pwrspec, astrolib.  Removes PGAFF f-o-m stuff
@@ -68,34 +68,31 @@ class eor:
         self.dkcoher = None
         self.dkcoherScale = 1.0
         self.cohMode = 'normal'  # vs full or un
-        self.shadow = True
-        print 'hardcoding shadowing to '+str(self.shadow)
-        ##########Now set system (do this order to not screw up updateWeb)
+        self.shadow = False
+        self.dacotaShortcut = False
+        ##########Now set system defaults (do this order to not screw up updateWeb)
         self.setModel(modelType=modelType,H0=H0)
         self.setData(boxcar=boxcar,coherentTracks=True,outputType='sq')
         self.setTrack(HAmin=HAmin,HAmax=HAmax,HAunit=HAunit,tobs=tobs,tobsUnit=tobsUnit,tint=tint,tintUnit=tintUnit,Npt=1,dec=dec,lat=lat)
-        self.setPlot(plotModel=False,plotSteps=False,plotBins=True,plotMMQ=False,plotLines=True,showLegend=True,ltype='-')
+        self.setPlot(plotModel=False,plotSteps=False,plotBins=True,plotVersion='errbar',plotMMQ=False,plotLines=True,showLegend=True,ltype='-')
         self.setSys(config=config,rotate=rotate,Nplat=Nplat,Npol=Npol,dlogk=dlogk,z=z,Tsys=Tsys,restFreq=restFreq,freqUnit=freqUnit,BW=BW,bwUnit=bwUnit,Nch=Nch)
         evu.updateWeb(self)
     
 
-    def arraySensitivity(self,arrayFile=None,dacotaShortcut=False,color=None,label=None,linewidth=2,plotExtraStuff=False,kukvdot='k.'):
+    def arraySensitivity(self,color=None,label=None,linewidth=2,plotExtraStuff=False,kukvdot='k.'):
         """Does the sensitivity analysis - used to be self.array, and also subsumed self.dacota
              - arrayFile - the config file, None is self.arrayFile
              - plotMMQ - plot Matt's expression along with calculated value
              - dacotaShortcut - this sidesteps the iterations by assuming isoplanactic coherent integration
              it has a whole bunch of extraneous arguments to make the figures per the proposal..."""
         # setup and initialize
-        if arrayFile != None:
-            arrayFile=self.config
-            self.setSys(config=arrayFile)
-        self.setData(outputType='sq')
         hu = Units[self.HAunit]/Units['hr']    # makes sure HA in hours
         tu = Units[self.tintUnit]/Units['hr']  # makes sure tint in hours
         HA = self.HAmin*hu
         tint = self.tint*tu
         HAmax = self.HAmax*hu
         oldValues = []
+        dacotaShortcut = self.dacotaShortcut
         if dacotaShortcut and self.arrayType == 'platform':
             oldValues = [self.HAmin,self.HAmax,self.tint,self.tintUnit]
             HA=0.0
@@ -207,7 +204,7 @@ class eor:
             self.setSys(config='amiba.dat', Tsys=50., BW=2.0, Nch=256, Npol=2., restFreq=115., z=z)
             self.setTrack(tobs=1500.0, Npt=1)
         else:
-            self.setSys(config='amiba.dat', Tsys=50., BW=2.0, Nch=256, Npol=2., restFreq=230., z=z)
+            self.setSys(config='amiba.dat', Tsys=50., BW=4.0, Nch=256, Npol=2., restFreq=230., z=z)
             self.setTrack(tobs=1500.0, Npt=1.)
         self.setData(coherentTracks=True)
 
@@ -231,7 +228,7 @@ class eor:
 
 
     def setTrack(self,HAmin=None,HAmax=None,HAunit=None,tobs=None,tobsUnit=None,tint=None,tintUnit=None,Npt=None,\
-                 dec=None,lat=None,elLimit=None):
+                 dec=None,lat=None,elLimit=None,shadow=None):
         """Sets track parameters:  (HAmin, HAmax, HAstep) [hrs], dec [deg]"""
 
         if HAunit==None:
@@ -246,7 +243,7 @@ class eor:
             tintUnit=self.tintUnit
         else:
             self.tintUnit=tintUnit
-            
+
         if HAmin!=None:
             print 'TRACK: Setting HAmin to '+str(HAmin)+' '+self.HAunit
             self.HAmin=float(HAmin)
@@ -282,6 +279,11 @@ class eor:
         if elLimit!=None:
             print 'TRACK: Setting elLimit to '+str(lat)+' degrees'
             self.elLimit = elLimit
+
+        if shadow!=None:
+            print 'TRACK:  Setting shadow to '+str(shadow)
+            print '        (Note that shadow==True ignores shadowed antennas'
+            self.shadow = shadow
 
         Az, El = al.eq2hor(15.0*self.HAmin,self.dec,self.lat)
         if El < self.elLimit:
@@ -330,7 +332,7 @@ class eor:
         evu.updateWeb(self)
 
     def setSys(self,config=None,rotate=None,Npp=None,Nplat=None,Npol=None,dlogk=None,dkpk=None,Dant=None,bmin=None,z=None,Tsys=None,restFreq=None,obsFreq=None,freqUnit=None,\
-               BW=None,bwUnit=None,Nch=None,Npt=None,lat=None):
+               BW=None,bwUnit=None,Nch=None,Npt=None,lat=None,dacotaShortcut=None):
         """sets config parameters.  List in dispSys()"""
         if config!=None:
             print 'SYS: Setting config to ',config
@@ -350,8 +352,15 @@ class eor:
                 else:
                     self.bmin = self.Dant
         if rotate!=None:
-            print 'SYS: Setting rotate to ',rotate
+            print 'SYS: Setting rotate to '+str(rotate)
+            if self.arrayType!='platform':
+                print 'SYS: note rotate only for platforms, not '+self.arrayType
             self.rotate = rotate
+        if dacotaShortcut!=None:
+            print 'SYS: Setting dacotaShortcut to ',str(dacotaShortcut)
+            if self.arrayType!='platform':
+                print 'SYS: note dacotaShortcut only for platforms, not '+self.arrayType
+            self.rotate = rotate            
         if Npp!=None:
             print 'SYS: Setting Npp to ',Npp
             self.Npp=float(Npp)
@@ -421,7 +430,7 @@ class eor:
         self.nKline = int(self.nBaseline*self.Nch)
         evu.updateWeb(self)
 
-    def setPlot(self,plotModel=None, plotSteps=None, plotBins=None, plotMMQ=None, plotLines=None, showLegend=None, ltype=None):
+    def setPlot(self,plotModel=None, plotSteps=None, plotBins=None, plotVersion=None, plotMMQ=None, plotLines=None, showLegend=None, ltype=None):
         if plotModel!=None:
             print 'PLOT:  Setting plotModel to ',plotModel
             self.plotModel = plotModel
@@ -430,20 +439,20 @@ class eor:
             self.plotSteps = plotSteps
         if plotBins!=None:
             print 'PLOT:  Setting plotBins to ',plotBins
-            print 'PLOT:  Setting plotLines to False'
             self.plotBins = plotBins
-            self.plotLines = False
         if plotMMQ!=None:
             print 'PLOT:  Setting plotMMQ to ',plotMMQ
             self.plotMMQ = plotMMQ
         if plotLines!=None:
             print 'PLOT:  Setting plotLines to ',plotLines
-            print 'PLOT:  Setting plotBins to False'
             self.plotLines = plotLines
-            self.plotBins = False
         if ltype!=None:
             print 'PLOT:  Setting linetype to '+ltype
             self.ltype = ltype
+        if plotVersion!=None:
+            print 'PLOT:  Setting plotVersion to '+plotVersion
+            print '       options are errbar or senscurve'
+            self.plotVersion = plotVersion
         if showLegend!=None:
             print 'PLOT:  Setting showLegend to '+str(showLegend)
             self.showLegend = showLegend
@@ -484,12 +493,10 @@ class eor:
             self.dmin_scale.append(self.d[0])
             self.eff_scale.append(eff)
         print 'end'
-            
-
     def rescaleArray(self,scale=1.0):
         self.scale = scale
         Dnew = self.Dant*scale
-        self.setSys(Dnew)
+        self.setSys(Dant=Dnew)
         for i in range(self.Npp):
             self.N[i]*=scale
             self.E[i]*=scale
@@ -582,7 +589,7 @@ class eor:
         return Npp
 
     def computeUV(self,coord='uv'):
-        """Computes the uv distribution of coherently tracking platform.  Can select uv coordinates or kperp. (uv or k)
+        """Computes the uv distribution.  Can select uv coordinates or kperp. (uv or k)
            Note that this does the symmetric version...have j in range(i) for unique.  This is not used in the standard
            progression (computeK() is).  Append 'd' if want differential.  Append 'w' if want all 'Hermitian' points.
            Normals options are then:  k, kd, kw, kdw, uv, uvd, uvw, uvdw"""
@@ -667,7 +674,8 @@ class eor:
         for i in range(self.Npp):
             for j in range(i):
                 u, v, w = self.calcuv(i,j,HA)
-                if u==False:
+                if self.shadow==True and self.obsWavelength*math.sqrt(u*u + v*v) < self.Dant:
+                    print 'Shadowed baseline not used'
                     continue
                 nKline+=1
                 ku = u*scale
@@ -880,7 +888,7 @@ class eor:
                     continue
                 Occupied = False
                 perpOcc = []
-                for nuv in range(self.nBaseline):
+                for nuv in range(self.nKline/self.Nch):
                     if (self.ku[nuv] >= kubinmin and self.ku[nuv] < kubinmax) and (self.kv[nuv] >= kvbinmin and self.kv[nuv] < kvbinmax):
                         Occupied = True
                         perpOcc.append(nuv)
@@ -935,10 +943,7 @@ class eor:
             u =  X*math.sin(HA)               + Y*math.cos(HA)
             v = -X*math.sin(dec)*math.cos(HA) + Y*math.sin(dec)*math.sin(HA) + Z*math.cos(dec)
             w =  X*math.cos(dec)*math.cos(HA) - Y*math.cos(dec)*math.sin(HA) + Z*math.sin(dec)
-            if self.shadow==False and self.obsWavelength*math.sqrt(u*u + v*v) < self.Dant:
-                print 'Shadowed baseline not used...set to zero'
-                u = 0.0
-                v = 0.0
+
 	return u,v,w
 
     def calcduv(self,i,j,HAhr,decdeg=None,latdeg=None):
