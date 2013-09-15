@@ -87,9 +87,11 @@ class modelData:
         co2 = np.copy(self.co)
             
         if eor.z < 4.0:
+            plt.subplot(121)
             plt.loglog(k1,co1,cl1, label='z=3, Model B') #r'z=3, SFR$_{min}$=0.01 M$_{\odot}$/yr')
             plt.loglog(k2,co2,cl2, label='z=3, Model A') #r'z=3, $10^{9}$ M$_{\odot}$')            
         else:
+            plt.subplot(122)
             plt.loglog(k2,co2,cl2, label=r'z=6, $10^{8}$ M$_{\odot}$')
             plt.loglog(k1,co1,cl1, label=r'z=6, $10^{10}$ M$_{\odot}$')
 
@@ -121,8 +123,11 @@ class modelData:
             #ax.set_xscale("log",nonposx='clip')
             #ax.set_yscale("log",nonpoxy='clip')
             dither = 1.0
+            if eor.z < 1.0:  # these are the dacota points/error bars
+                cld = 'g'
+            else:
+                cld = 'b'
             scale = 1.0
-            cld = 'b'
             if cl1=='k':
                 dither = 0.98
                 scale = 2.5

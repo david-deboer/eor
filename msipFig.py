@@ -1,7 +1,7 @@
 import eorpy
 import matplotlib.pyplot as plt
 pt = 'senscurve'
-pt = 'errb'
+#pt = 'errb'
 plt.rcParams.update({'font.size':20})
 #e.setPlot(showLegend=False)
 e = eorpy.eor()
@@ -10,7 +10,8 @@ e.setTrack(tobs=1500.,Npt=4.0)
 dlogk_z6 = 0.18
 dlogk_z3 = 0.18
 
-plt.loglog([1e-6],[1e-6],'bo',label='DACOTA')
+#plot something to get DACOTA as first entry in legend
+#plt.loglog([1e-6],[1e-6],'bo',label='DACOTA')
 
 if pt == 'senscurve':
         e.setPlot(plotVersion = 'sens')
@@ -34,4 +35,7 @@ if pt == 'senscurve':
 	e.arraySensitivity(color='k',label=r'DACOTA z=6')
 
 
+plt.subplot(121)
+plt.axis([0.1,3.0,0.001,20000])
+plt.subplot(122)
 plt.axis([0.1,3.0,0.001,20000])

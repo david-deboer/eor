@@ -136,6 +136,7 @@ class eor:
         evu.updateWeb(self)
 
         # plot the data
+        color = 'b'
         eorio.plotBoost(self,plotBoost)
         eorio.plotSensitivity(self,plotSens,label=label,color=color)
                 

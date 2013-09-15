@@ -16,7 +16,7 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     if label == 'auto':
         label = '%s z=%.0f' % (eor.config,eor.z)
 
-    print 'Note that to get both bins and lines, you need to run with plotBins first'
+    print 'EORIO:  Note that to get both bins and lines, you need to run with plotBins first'
 
 
     little_h = eor.h
@@ -25,8 +25,11 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     edgeRight = eorpy.edgeRight
 
     plt.figure(fignum)
+    if eor.z < 4.5:
+        plt.subplot(121)
+    else:
+        plt.subplot(122)
     
-    print label
     xdat=np.array(eor.kbin[ctr])*little_h
     ydat=np.array(eor.d)
     if eor.plotVersion == 'errbar':
@@ -36,11 +39,18 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
             xdat,ydat=stepWise(eor,little_h)
         if eor.plotBins:
             errx,erry=errorBars(eor,little_h)
-            plt.subplot(111,xscale='log',yscale='log')
+            if eor.z < 4.5:
+                plt.subplot(121,xscale='log',yscale='log')
+            else:
+                plt.subplot(122,xscale='log',yscale='log')
             if color==None:
                 plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_')
+                print 'HERE1111111'
             else:
+                color = 'b'
                 plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_',color=color)
+                print 'HERE2222222'
+                print errx
         if eor.plotLines:
             if color==None:
                 plt.loglog(xdat,ydat,ls=eor.ltype,label=label,linewidth=linewidth)
