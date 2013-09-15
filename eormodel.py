@@ -22,47 +22,34 @@ class modelData:
         h = self.h
         if z == None:
             z = eor.z
-        print "\nReading "+fileName+" and scaling for z="+str(z)
+        if z < 4.5:
+            zref = 2.0
+        else:
+            zref = 7.0
+            
+        print "\nReading %s and scaling from %.1f to %.1f" % (fileName,zref,z)
         self.kModel = []
-        self.kModel2= []
+        self.co = []
         self.kKISS = []
         self.dKISS = []
-        self.co1 = []
-        self.co2 = []
-        self.co3 = []
-        dfn = ' '
         i=1
         for line in fp:
             line=line.strip()
             t = line.split()
-            if z<4.:
-                k = float(t[0])*h
-                self.kModel.append(k)
-                co3 = float(t[1])*3.0/(1.0+z)
-                if self.outputType!='sq':
-                    co3=math.sqrt(co3)
-                self.co3.append(co3)
-                dfn = 'co3'
-            elif fileName == 'fpaSensRead.out':
+            if fileName == 'fpaSensRead.out':
                 k = float(t[0])
                 self.kKISS.append(k)
                 d = float(t[1])
                 self.dKISS.append(d)
             else:
-                k = h*float(t[0])
+                k = float(t[0])
+                co = float(t[1])*(1.0+zref)/(1.0+z)
+                if self.outputType!='sq':
+                    print 'changing co#########'
+                    co = math.sqrt(co)
                 self.kModel.append(k)
-                k = h*float(t[2])
-                self.kModel2.append(k)
-                co1 = math.sqrt(7.0/(1.0+z))*float(t[1])
-                co2 = math.sqrt(7.0/(1.0+z))*float(t[3])
-                if self.outputType=='sq':
-                    co1*=co1
-                    co2*=co2
-                self.co1.append(co1)
-                self.co2.append(co2)
-                dfn = 'co1, co2'
+                self.co.append(co)
             i+=1
-        print "Note arrays are:  kModel, "+dfn
         return i
 
 
@@ -82,83 +69,51 @@ class modelData:
 
         if mType=='auto' and mPar=='file':
             if eor.z < 4.0:
-                fileName = 'cosmoz3_12Oct_modelB.txt'
+                fileName1 = 'cosmoz2_13Sep_modelB.txt'
+                fileName2 = 'cosmoz2_13Sep_modelA.txt'
+                cl1 = 'c'
+                cl2 = 'm'
             elif eor.z >= 4.0:
-                fileName = 'cosmoz6.txt'
-            else:
-                fileName = 'cosmoz6.txt'
-        elif mType=='file':
-            fileName = mPar
-        else:
-            print mType+' '+mPar+' not found'
-            return 0
+                fileName1 = 'cosmoz7_13Sep_10.txt'
+                fileName2 = 'cosmoz7_13Sep_8.txt'
+                cl1 = 'k'
+                cl2 = 'r'
 
-        self.readModelData(fileName=fileName,z=eor.z)
+        self.readModelData(fileName=fileName1,z=eor.z)
+        k1 = np.copy(self.kModel)
+        co1 = np.copy(self.co)
+        self.readModelData(fileName=fileName2,z=eor.z)
+        k2 = np.copy(self.kModel)
+        co2 = np.copy(self.co)
             
         if eor.z < 4.0:
-            cl1 = 'c'
-            plt.loglog(self.kModel,self.co3,cl1, label='z=3, Model B') #r'z=3, SFR$_{min}$=0.01 M$_{\odot}$/yr')
-            k1 = np.copy(self.kModel)
-            c1 = np.copy(self.co3)
+            plt.loglog(k1,co1,cl1, label='z=3, Model B') #r'z=3, SFR$_{min}$=0.01 M$_{\odot}$/yr')
+            plt.loglog(k2,co2,cl2, label='z=3, Model A') #r'z=3, $10^{9}$ M$_{\odot}$')            
         else:
-            cl1 = 'k'
-            cl2 = 'r'
-            plt.loglog(self.kModel,self.co1,cl1, label=r'z=6, $10^{10}$ M$_{\odot}$')
-            plt.loglog(self.kModel2,self.co2,cl2, label=r'z=6, $10^{8}$ M$_{\odot}$')
-            k1 = self.kModel
-            c1 = self.co1
-            k2 = self.kModel2
-            c2 = self.co2
-        if (eor.outputType=='sq'):
-            plt.axis([0.1,5.0,0.01,40000.0])
-        else:
-            plt.axis([0.06,5.0,.1,40])
-
-        if mType=='auto' and mPar == 'file' and eor.z < 4.0:
-            fileName = 'cosmoz3_12Oct_modelA.txt'
-            self.readModelData(fileName=fileName,z=eor.z)
-            k2 = np.copy(self.kModel)
-            c2 = np.copy(self.co3)
-            cl2 = 'm'
-            plt.loglog(k2,c2,cl2, label='z=3, Model A') #r'z=3, $10^{9}$ M$_{\odot}$')
+            plt.loglog(k2,co2,cl2, label=r'z=6, $10^{8}$ M$_{\odot}$')
+            plt.loglog(k1,co1,cl1, label=r'z=6, $10^{10}$ M$_{\odot}$')
 
         if eor.z > splitOut:
+            a = co1[-1]/( (k1[-1])**3.0)
+            co_p = a*(np.array(k1))**3.0
+            co_c = co1 - co_p
+            sm = interpolate.UnivariateSpline(k1,co_c,s=40)
+            sm_co_c = sm(k1)
+            st = cl1+'--'
+            plt.loglog(k1,co_p,st)
             if eor.z > 4.5:
-                a = self.co1[-1]/( (self.kModel[-1]/h)**3.0)
-                co1_p = a*(np.array(self.kModel)/h)**3.0
-                co1_c = np.array(self.co1) - co1_p
-                sm = interpolate.UnivariateSpline(k1,co1_c,s=40)
-                sm_co1_c = sm(k1)
-                plt.loglog(self.kModel,co1_p,'k:')
-                plt.loglog(self.kModel,sm_co1_c,'k--')
-                
-                b = self.co2[-1]/((self.kModel2[-1]/h)**3.0)
-                co2_p = b*(np.array(self.kModel2)/h)**3.0
-                co2_c = np.array(self.co2) - co2_p
-                sm = interpolate.UnivariateSpline(k2,co2_c,s=40)
-                sm_co2_c = sm(k2)        
-                plt.loglog(self.kModel2,co2_p,'r:')
-                plt.loglog(self.kModel2,sm_co2_c,'r--')
-            else:
-                a = c1[-1]/( (k1[-1]/h)**3.0)
-                co1_p = a*(k1/h)**3.0
-                co1_c = c1 - co1_p
-                sm = interpolate.UnivariateSpline(k1,co1_c)
-                sm_co1_c = sm(k1)
-                hfil = np.where(k1>1.0)
-                sm_co1_c[hfil] = 1e-6
-                plt.loglog(k1,co1_p,'c:')
-                #plt.loglog(k1,sm_co1_c,'c--')
-
-                b = c2[-1]/( (k2[-1]/h)**3.0)
-                co2_p = b*(k2/h)**3.0
-                co2_c = c2 - co2_p
-                sm = interpolate.UnivariateSpline(k2,co2_c)
-                sm_co2_c = sm(k2)
-                hfil = np.where(k2 > 0.7)
-                sm_co2_c[hfil] = 1e-6
-                plt.loglog(k2,co2_p,'m:')
-                #plt.loglog(k2,sm_co2_c,'m--')
+                st = cl1+':'
+                plt.loglog(k1,sm_co_c,st)
+            a = co2[-1]/( (k2[-1])**3.0)
+            co_p = a*(np.array(k2))**3.0
+            co_c = co2 - co_p
+            sm = interpolate.UnivariateSpline(k2,co_c,s=40)
+            sm_co_c = sm(k2)
+            st = cl2+'--'
+            plt.loglog(k2,co_p,st)
+            if eor.z > 4.5:
+                st = cl2+':'
+                plt.loglog(k2,sm_co_c,st)
 
         if yerrbar:
             #plt.figure(1)
@@ -167,30 +122,32 @@ class modelData:
             #ax.set_yscale("log",nonpoxy='clip')
             dither = 1.0
             scale = 1.0
+            cld = 'b'
             if cl1=='k':
                 dither = 0.98
                 scale = 2.5
                 print 'SCALING ERRBAR BY '+cl1+'  ',scale
             x = np.copy(yerrbar[0])*dither
-            f = interpolate.interp1d(k1,c1)
+            f = interpolate.interp1d(k1,co1)
             d = f(x)
             yerr = fix_yerr(d,yerrbar[1],1e-6,scale)
-            plt.errorbar(x,d,yerr=yerr,xerr=None,fmt='_',color=cl1)
-            plt.loglog(x,d,'o',color=cl1)
+            plt.errorbar(x,d,yerr=yerr,xerr=None,fmt='_',color=cld)
+            plt.loglog(x,d,'o',color=cld)
 
             if cl2=='r':
                 dither = 1.02
                 scale = 2.5
                 print 'SCALING ERRBAR BY '+cl2+'  ',scale
             x = np.array(yerrbar[0],copy=True)*dither
-            f2 = interpolate.interp1d(k2,c2)
+            f2 = interpolate.interp1d(k2,co2)
             d2 = f2(x)
             yerr = fix_yerr(d2,yerrbar[1],1e-6,scale)
-            plt.errorbar(x,d2,yerr=yerr,xerr=None,fmt='_',color=cl2)
+            plt.errorbar(x,d2,yerr=yerr,xerr=None,fmt='_',color=cld)
             if cl2=='m':
-                plt.loglog(x,d2,'o',label='DACOTA',color=cl2)
+                plt.loglog(x,d2,'o',color=cld)
+                #plt.loglog(x,d2,'o',label='DACOTA',color=cld)
             else:
-                plt.loglog(x,d2,'o',color=cl2)
+                plt.loglog(x,d2,'o',color=cld)
         return 1
 
 

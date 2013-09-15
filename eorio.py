@@ -54,7 +54,7 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     #plt.ylabel(r'$\Delta^2_{CO}$ or $\Delta^2_N$ [$\mu$K$^2$]')
     plt.ylabel(r'$\Delta^2_{CO}$ [$\mu$K$^2$]')
     if eor.showLegend:
-        plt.legend(loc='lower right')
+        plt.legend(loc='upper left') #lower right')
         
     if eor.plotMMQ:     # compute approx
         bmmq = eor.computeMMQboost()
