@@ -153,6 +153,30 @@ class modelData:
                 #plt.loglog(x,d2,'o',label='DACOTA',color=cld)
             else:
                 plt.loglog(x,d2,'o',color=cld)
+
+            # calc snr
+            x = np.copy(yerrbar[0])
+            f = interpolate.interp1d(k1,co1)
+            d = f(x)
+            outfile = 'snr_'+fileName1
+            fp = open(outfile,'w')
+            for i in range(len(x)):
+                snr = d[i]/yerrbar[1][i]
+                sout = '%.4f\t%.4f\n' % (x[i],snr)
+                fp.write(sout)
+            fp.close()
+            x = np.copy(yerrbar[0])
+            f = interpolate.interp1d(k2,co2)
+            d = f(x)
+            outfile = 'snr_'+fileName2
+            fp = open(outfile,'w')
+            for i in range(len(x)):
+                snr = d[i]/yerrbar[1][i]
+                sout = '%.4f\t%.4f\n' % (x[i],snr)
+                fp.write(sout)
+            fp.close()
+
+        
         return 1
 
 

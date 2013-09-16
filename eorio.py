@@ -16,8 +16,7 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     if label == 'auto':
         label = '%s z=%.0f' % (eor.config,eor.z)
 
-    print 'EORIO:  Note that to get both bins and lines, you need to run with plotBins first'
-
+    print 'EORIO.PY:  Note that to get both bins and lines, you need to run with plotBins first'
 
     little_h = eor.h
     edgeLeft = eorpy.edgeLeft
@@ -35,22 +34,21 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     if eor.plotVersion == 'errbar':
         em.plotModelData(eor,[xdat,ydat],fignum,color,linewidth)
     else:
+        if eor.plotModel:
+            em.plotModelData(eor,None,fignum,color,linewidth)
         if eor.plotSteps:
             xdat,ydat=stepWise(eor,little_h)
         if eor.plotBins:
             errx,erry=errorBars(eor,little_h)
-            if eor.z < 4.5:
-                plt.subplot(121,xscale='log',yscale='log')
-            else:
-                plt.subplot(122,xscale='log',yscale='log')
+##            if eor.z < 4.5:
+##                plt.subplot(121,xscale='log',yscale='log')
+##            else:
+##                plt.subplot(122,xscale='log',yscale='log')
             if color==None:
                 plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_')
-                print 'HERE1111111'
             else:
                 color = 'b'
-                plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_',color=color)
-                print 'HERE2222222'
-                print errx
+                plt.errorbar(xdat,ydat,yerr=None,xerr=errx,fmt='_')#,ecolor=color)
         if eor.plotLines:
             if color==None:
                 plt.loglog(xdat,ydat,ls=eor.ltype,label=label,linewidth=linewidth)
@@ -58,8 +56,8 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
                 plt.loglog(xdat,ydat,color=color,ls=eor.ltype,label=label,linewidth=linewidth)
         else:
             plt.loglog(xdat,ydat,'+')
-        if eor.plotModel:
-            em.plotModelData(eor,None,fignum,color,linewidth)
+        #if eor.plotModel:
+        #    em.plotModelData(eor,None,fignum,color,linewidth)
     plt.xlabel(r'$k$ [h$\cdot$Mpc$^{-1}$]')
     #plt.ylabel(r'$\Delta^2_{CO}$ or $\Delta^2_N$ [$\mu$K$^2$]')
     plt.ylabel(r'$\Delta^2_{CO}$ [$\mu$K$^2$]')
