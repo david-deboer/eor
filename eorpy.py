@@ -504,7 +504,7 @@ class eor:
             self.U[i]*=scale
         self.calcStats()
 
-    def readArrayFile(self,arrayFile=None, scale=None,  nameIncluded=1, path='configs/',verbose=False):
+    def readArrayFile(self,arrayFile=None, scale=None,  nameIncluded=1, path='/Users/daviddeboer1/Documents/Code/antutil/telescopeData/configs/',verbose=False):
         """Reads a configuration file of form:  [name] N E [U]
            For type 'platform'
                Npp=Npp, Nplat=Nplat
