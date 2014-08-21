@@ -24,10 +24,12 @@ def plotSensitivity(eor,fignum=1,color=None,label='auto',linewidth=2):
     edgeRight = eorpy.edgeRight
 
     plt.figure(fignum)
-    if eor.z < 4.5:
-        plt.subplot(121)
-    else:
-        plt.subplot(122)
+    panels=False
+    if panels:
+        if eor.z < 4.5:
+            plt.subplot(121)
+        else:
+            plt.subplot(122)
     
     xdat=np.array(eor.kbin[ctr])*little_h
     ydat=np.array(eor.d)

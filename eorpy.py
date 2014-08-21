@@ -162,7 +162,7 @@ class eor:
             kh = 0.7
 
         if attempt == 'now':
-            self.setSys(config='sza_L.ant', Tsys=66., BW=1.0, Nch=30, Npol=2., restFreq=230., z=6.)
+            self.setSys(config='sza_L.ant', Tsys=66., BW=1.0, Nch=30, Npol=2., restFreq=115., z=3.)
             self.setTrack(tobs=1000.)
             self.setData(coherentTracks=False)
         elif attempt == 'best':
@@ -202,8 +202,9 @@ class eor:
     def set2amiba(self,z=6):
         """6 vs 3"""
         if z<4.:
-            self.setSys(config='amiba.dat', Tsys=50., BW=2.0, Nch=256, Npol=2., restFreq=115., z=z)
-            self.setTrack(tobs=1500.0, Npt=1)
+            self.setSys(config='7ele.dat', Tsys=100., BW=2.0, Nch=1024, Npol=1., restFreq=345., z=z)
+            self.setTrack(tobs=1000.0, Npt=1,lat=19.5,HAmin=-3.,HAmax=3.,elLimit=30.)
+            self.setPlot(plotModel=True,plotLines=True,plotBins=False,plotSteps=True,plotVersion='sens')
         else:
             self.setSys(config='amiba.dat', Tsys=50., BW=4.0, Nch=256, Npol=2., restFreq=230., z=z)
             self.setTrack(tobs=1500.0, Npt=1.)
@@ -985,10 +986,6 @@ class eor:
 	self.Umax = -1E9;
 	self.Umin = 1E9;
 	for i in range(len(self.E)):
-	    self.bmax = 0.0
-	    self.bimax = 0
-	    self.bmin = 1E6
-	    self.bimin = 0
 	    if self.E[i] > self.Emax:
                 self.Emax = self.E[i]
 	    if self.E[i] < self.Emin:

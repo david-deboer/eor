@@ -87,7 +87,7 @@ class modelData:
         co2 = np.copy(self.co)
             
         if eor.z < 4.0:
-            plt.subplot(121)
+            #plt.subplot(121)
             plt.loglog(k1,co1,cl1, label='z=3, Model B') #r'z=3, SFR$_{min}$=0.01 M$_{\odot}$/yr')
             plt.loglog(k2,co2,cl2, label='z=3, Model A') #r'z=3, $10^{9}$ M$_{\odot}$')            
         else:
