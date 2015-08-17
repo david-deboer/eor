@@ -7,11 +7,10 @@ import string
 import eorview
 evu = eorview.view()
 import eorio
-sys.path.append('/Users/daviddeboer1/Documents/Code/cosmo')
+sys.path.append('/Users/ddeboer/Documents/Code/cosmo')
 import nedclass as ned
-sys.path.append('/Users/daviddeboer1/Documents/Code/lib')
-import astrolib
-al = astrolib.astrolib()
+sys.path.append('/Users/ddeboer/Documents/Code/Lib')
+import astrolib as al
 
 ###Various constants
 edgeLeft=0
@@ -24,7 +23,7 @@ Units = {'Hz':1.0, 'kHz':1.0E3, 'MHz':1.0E6, 'GHz':1.0E9, 'sec':1.0, 'min':60.0,
 
 ###Everything else is in the class bleor
 class eor:
-    def __init__(self, config='13ele.dat', rotate=True, Nplat=1, Tsys=50.0, Npol=1.0, dlogk=0.2, tobs=1000.0, tobsUnit='hr', z=6.0, restFreq=230.0, freqUnit='GHz',\
+    def __init__(self, config='hera331.dat', rotate=True, Nplat=1, Tsys=50.0, Npol=1.0, dlogk=0.2, tobs=1000.0, tobsUnit='hr', z=6.0, restFreq=230.0, freqUnit='GHz',\
                  BW=1.0, bwUnit='GHz', Nch=128, HAmin=-5.0, HAmax=5.0, HAunit='hr', tint=0.5, tintUnit='hr', dec=25.0, lat=34.0, boxcar=10.,\
                  modelType='auto:file', H0=72.0):
         """eorpy runs the baseline stuff for EoR power spectrum measurement.  Needs nedclass, eorview, pwrspec, astrolib.  Removes PGAFF f-o-m stuff
@@ -516,6 +515,7 @@ class eor:
         if arrayFile=='generate':
             print "Can't read file in 'generate' mode."
             return 0
+        path = ''
         try:
             fp = open(path+arrayFile,"r")
         except IOError:
